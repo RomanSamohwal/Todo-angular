@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Task} from "../../model/Task";
 import {DataHandlerService} from "../../service/data-handler.service";
 
@@ -11,10 +11,10 @@ export class TasksComponent implements OnInit {
 
   tasks: Task[] | undefined;
 
-  constructor(private dataHandlerService: DataHandlerService) { }
-
-  ngOnInit(): void {
-    this.tasks = this.dataHandlerService.getTasks()
+  constructor(private dataHandlerService: DataHandlerService) {
   }
 
+  ngOnInit(): void {
+    this.dataHandlerService.tasksSubject.subscribe(tasks => this.tasks = tasks)
+  }
 }
