@@ -9,9 +9,15 @@ import {DataHandlerService} from "../../service/data-handler.service";
 })
 export class TasksComponent implements OnInit {
 
-  tasks: Task[] | undefined;
+  // @ts-ignore
+  tasks: Task[];
+
 
   constructor(private dataHandlerService: DataHandlerService) {
+  }
+
+  toggleTaskCompleted(task: Task) {
+     task.completed = !task.completed
   }
 
   ngOnInit(): void {
