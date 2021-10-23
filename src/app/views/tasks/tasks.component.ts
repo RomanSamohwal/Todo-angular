@@ -1,16 +1,18 @@
-import {AfterViewInit, Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Task} from "../../model/Task";
 import {DataHandlerService} from "../../service/data-handler.service";
 import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
+import {EditTaskDialogComponent} from "../../dialog/edit-task-dialog/edit-task-dialog.component";
+import {MatDialog} from "@angular/material/dialog";
 
 @Component({
   selector: 'app-tasks',
   templateUrl: './tasks.component.html',
   styleUrls: ['./tasks.component.css']
 })
-export class TasksComponent implements OnInit, AfterViewInit {
+export class TasksComponent implements OnInit {
 
   // поля для таблицы (те, что отображают данные из задачи - должны совпадать с названиями переменных класса)
   public displayedColumns: string[] = ['color', 'id', 'title', 'date', 'priority', 'category'];
@@ -24,13 +26,20 @@ export class TasksComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort, {static: false}) private sort: MatSort;
 
   // текущие задачи для отображения на странице
-  // @ts-ignore
+  private tasks: Task[] = [];
 
-  @Input()
-  // @ts-ignore
-  public tasks: Task[]; // напрямую не присваиваем значения в переменную, только через @Input
+  @Input('tasks')
+  private set setTasks(tasks: Task[]) {// напрямую не присваиваем значения в переменную, только через @Input
+    this.tasks = tasks
+    this.fillTable()
+  }
 
-  constructor(private dataHandler: DataHandlerService) {
+  @Output()
+  updateTask = new EventEmitter<Task>()
+
+  constructor(private dataHandler: DataHandlerService,
+              private dialog: MatDialog, // работа с диалоговым окном
+  ) {
   }
 
   ngOnInit() {
@@ -50,7 +59,7 @@ export class TasksComponent implements OnInit, AfterViewInit {
   }
 
   // в зависимости от статуса задачи - вернуть цвет названия
-  public getPriorityColor(task: Task) {
+  public getPriorityColor(task: Task) : string {
 
     if (task.completed) {
       return `#F8F9FA`
@@ -66,6 +75,11 @@ export class TasksComponent implements OnInit, AfterViewInit {
 
   // показывает задачи с применением всех текущий условий (категория, поиск, фильтры и пр.)
   private fillTable() {
+
+    if (!this.dataSource) {
+      return
+    }
+
     this.addTableObjects()
     // @ts-ignore
     this.dataSource.data = this.tasks; // обновить источник данных (т.к. данные массива tasks обновились)
@@ -96,6 +110,27 @@ export class TasksComponent implements OnInit, AfterViewInit {
   private addTableObjects() {
     this.dataSource.sort = this.sort; // компонент для сортировки данных (если необходимо)
     this.dataSource.paginator = this.paginator; // обновить компонент постраничности (кол-во записей, страниц)
+  }
+
+  //диалоговое радактирование для добавления задачи
+  // диалоговое редактирования для добавления задачи
+  private openEditTaskDialog(task: Task): void {
+
+    // открытие диалогового окна
+    const dialogRef = this.dialog.open(EditTaskDialogComponent, {
+      data: [task, 'Редактирование задачи'],
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // обработка результатов
+
+      if (result as Task) { // если нажали ОК и есть результат
+        this.updateTask.emit(task);
+        return;
+      }
+
+    });
   }
 }
 

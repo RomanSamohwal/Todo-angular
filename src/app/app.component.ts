@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {DataHandlerService} from "./service/data-handler.service";
 import {Task} from './model/Task'
+import {Category} from "./model/Category";
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,9 @@ import {Task} from './model/Task'
 export class AppComponent implements OnInit {
   title = 'Todo-angular';
   tasks: Task[] = []
+  categories: Category[] = []
+
+  private selectedCategory: Category | null = null
 
   constructor(private dataHandler: DataHandlerService,//фасад для работы с данными
   ) {
@@ -17,5 +21,37 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.dataHandler.getAllTasks().subscribe(tasks => this.tasks = tasks);
+    this.dataHandler.getAllCategories().subscribe(categories => this.categories = categories)
+  }
+
+  // изменение категории
+  private onSelectCategory(category: Category) {
+
+    this.selectedCategory = category;
+
+    this.dataHandler.searchTasks(
+      this.selectedCategory,
+      null,
+      null,
+      null
+    ).subscribe(tasks => {
+      this.tasks = tasks;
+    });
+
+  }
+
+  private onUpdateTask(task: Task) {
+
+    this.dataHandler.updateTask(task).subscribe(() => {
+      this.dataHandler.searchTasks(
+        this.selectedCategory,
+        null,
+        null,
+        null
+      ).subscribe(tasks => {
+        this.tasks = tasks;
+      });
+    });
+
   }
 }

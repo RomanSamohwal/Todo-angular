@@ -71,7 +71,8 @@
               "browserTarget": "Todo-angular:build:production"
             },
             "development": {
-              "browserTarget": "Todo-angular:build:development"
+              "browserTarget": "Todo-angular:build:development",
+              "aot": false
             }
           },
           "defaultConfiguration": "development"
