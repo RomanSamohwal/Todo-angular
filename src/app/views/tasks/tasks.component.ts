@@ -35,6 +35,9 @@ export class TasksComponent implements OnInit {
   }
 
   @Output()
+  deleteTask = new EventEmitter<Task>();
+
+  @Output()
   updateTask = new EventEmitter<Task>()
 
   constructor(private dataHandler: DataHandlerService,
@@ -112,9 +115,8 @@ export class TasksComponent implements OnInit {
     this.dataSource.paginator = this.paginator; // обновить компонент постраничности (кол-во записей, страниц)
   }
 
-  //диалоговое радактирование для добавления задачи
   // диалоговое редактирования для добавления задачи
-  private openEditTaskDialog(task: Task): void {
+   openEditTaskDialog(task: Task): void {
 
     // открытие диалогового окна
     const dialogRef = this.dialog.open(EditTaskDialogComponent, {
@@ -124,6 +126,23 @@ export class TasksComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       // обработка результатов
+
+      if (result === 'complete') {
+        task.completed = true; // ставим статус задачи как выполненная
+        this.updateTask.emit(task);
+      }
+
+
+      if (result === 'activate') {
+        task.completed = false; // возвращаем статус задачи как невыполненная
+        this.updateTask.emit(task);
+        return;
+      }
+
+      if (result === 'delete') {
+        this.deleteTask.emit(task);
+        return;
+      }
 
       if (result as Task) { // если нажали ОК и есть результат
         this.updateTask.emit(task);

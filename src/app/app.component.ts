@@ -13,14 +13,15 @@ export class AppComponent implements OnInit {
   tasks: Task[] = []
   categories: Category[] = []
 
-  private selectedCategory: Category | null = null
+  // @ts-ignore
+  private selectedCategory: Category | null;
 
   constructor(private dataHandler: DataHandlerService,//фасад для работы с данными
   ) {
   }
 
   ngOnInit() {
-    this.dataHandler.getAllTasks().subscribe(tasks => this.tasks = tasks);
+   // this.dataHandler.getAllTasks().subscribe(tasks => this.tasks = tasks);
     this.dataHandler.getAllCategories().subscribe(categories => this.categories = categories)
   }
 
@@ -31,6 +32,7 @@ export class AppComponent implements OnInit {
 
     this.dataHandler.searchTasks(
       this.selectedCategory,
+      // @ts-ignore
       null,
       null,
       null
@@ -44,6 +46,7 @@ export class AppComponent implements OnInit {
 
     this.dataHandler.updateTask(task).subscribe(() => {
       this.dataHandler.searchTasks(
+        // @ts-ignore
         this.selectedCategory,
         null,
         null,
@@ -54,4 +57,22 @@ export class AppComponent implements OnInit {
     });
 
   }
+
+  // удаление задачи
+  private onDeleteTask(task: Task) {
+
+    this.dataHandler.deleteTask(task.id).subscribe(() => {
+      this.dataHandler.searchTasks(
+        //@ts-ignore
+        this.selectedCategory,
+        null,
+        null,
+        null
+      ).subscribe(tasks => {
+        console.log(tasks)
+        this.tasks = tasks;
+      });
+    });
+  }
+
 }

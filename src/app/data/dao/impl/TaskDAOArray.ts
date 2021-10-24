@@ -13,10 +13,14 @@ export class TaskDAOArray implements TaskDAO {
     return undefined;
   }
 
+
   // @ts-ignore
   delete(id: number): Observable<Task> {
-    // @ts-ignore
-    return undefined;
+    const taskTmp = TestData.tasks.find(t => t.id === id); // удаляем по id
+    if (taskTmp) {
+      TestData.tasks.splice(TestData.tasks.indexOf(taskTmp), 1);
+      return of(taskTmp);
+    }
   }
 
 // @ts-ignore
