@@ -6,6 +6,8 @@ import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
 import {EditTaskDialogComponent} from "../../dialog/edit-task-dialog/edit-task-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
+import {ConfirmDialogComponent} from "../../dialog/confirm-dialog/confirm-dialog.component";
+import {Category} from 'src/app/model/Category';
 
 @Component({
   selector: 'app-tasks',
@@ -15,7 +17,7 @@ import {MatDialog} from "@angular/material/dialog";
 export class TasksComponent implements OnInit {
 
   // поля для таблицы (те, что отображают данные из задачи - должны совпадать с названиями переменных класса)
-  public displayedColumns: string[] = ['color', 'id', 'title', 'date', 'priority', 'category'];
+  public displayedColumns: string[] = ['color', 'id', 'title', 'date', 'priority', 'category','operations', 'select'];
   // @ts-ignore
   public dataSource: MatTableDataSource<Task> // контейнер - источник данных для таблицы
 
@@ -26,7 +28,8 @@ export class TasksComponent implements OnInit {
   @ViewChild(MatSort, {static: false}) private sort: MatSort;
 
   // текущие задачи для отображения на странице
-  private tasks: Task[] = [];
+  // @ts-ignore
+  private tasks: Task[];
 
   @Input('tasks')
   private set setTasks(tasks: Task[]) {// напрямую не присваиваем значения в переменную, только через @Input
@@ -40,13 +43,16 @@ export class TasksComponent implements OnInit {
   @Output()
   updateTask = new EventEmitter<Task>()
 
+  @Output()
+  selectCategory = new EventEmitter<Category>(); // нажали на категорию из списка задач
+
   constructor(private dataHandler: DataHandlerService,
               private dialog: MatDialog, // работа с диалоговым окном
   ) {
   }
 
   ngOnInit() {
-    // this.dataHandler.getAllTasks().subscribe(tasks => this.tasks = tasks);
+    this.dataHandler.getAllTasks().subscribe(tasks => this.tasks = tasks);
 
     // датасорс обязательно нужно создавать для таблицы, в него присваивается любой источник (БД, массивы, JSON и пр.)
     this.dataSource = new MatTableDataSource();
@@ -74,6 +80,21 @@ export class TasksComponent implements OnInit {
 
     return '#fff';
 
+  }
+
+  // диалоговое окно подтверждения удаления
+  private openDeleteDialog(task: Task) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '500px',
+      data: {dialogTitle: 'Подтвердите действие', message: `Вы действительно хотите удалить задачу: "${task.title}"?`},
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) { // если нажали ОК
+        this.deleteTask.emit(task);
+      }
+    });
   }
 
   // показывает задачи с применением всех текущий условий (категория, поиск, фильтры и пр.)
@@ -115,6 +136,11 @@ export class TasksComponent implements OnInit {
     this.dataSource.paginator = this.paginator; // обновить компонент постраничности (кол-во записей, страниц)
   }
 
+  private onToggleStatus(task: Task) {
+    task.completed = !task.completed;
+    this.updateTask.emit(task);
+  }
+
   // диалоговое редактирования для добавления задачи
    openEditTaskDialog(task: Task): void {
 
@@ -150,6 +176,11 @@ export class TasksComponent implements OnInit {
       }
 
     });
+  }
+
+  private onSelectCategory(category: any) {
+    console.log(category)
+    this.selectCategory.emit(category);
   }
 }
 

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {DataHandlerService} from "./service/data-handler.service";
 import {Task} from './model/Task'
 import {Category} from "./model/Category";
@@ -9,7 +9,7 @@ import {Category} from "./model/Category";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'Todo-angular';
+  title = 'Todo';
   tasks: Task[] = []
   categories: Category[] = []
 
