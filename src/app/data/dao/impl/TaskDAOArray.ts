@@ -55,21 +55,35 @@ export class TaskDAOArray implements TaskDAO {
   // @ts-ignore
   search(category: Category | null, searchText: string | null, status: boolean | null, priority: Priority | null): Observable<Task[]> {
 
-    return of(this.searchTodos(category, searchText, status, priority));
+    return of(this.searchTasks(category, searchText, status, priority));
 
   }
 
-  private searchTodos(category: Category | null, searchText: string | null, status: boolean | null, priority: Priority | null): Task[] {
+  private searchTasks(category: Category | null, searchText: string | null, status: boolean | null, priority: Priority | null): Task[] {
 
     let allTasks = TestData.tasks;
 
-
-    if (category != null) {
-      allTasks = allTasks.filter(todo => todo.category === category);
+    // поочереди применяем все условия (какие не пустые)
+    if (status != null) {
+      allTasks = allTasks.filter(task => task.completed === status);
     }
 
+    if (category != null) {
+      allTasks = allTasks.filter(task => task.category === category);
+    }
 
-    return allTasks; // отфильтрованный массив
+    if (priority != null) {
+      allTasks = allTasks.filter(task => task.priority === priority);
+    }
+
+    if (searchText != null) {
+      allTasks = allTasks.filter(
+        task =>
+          task.title.toUpperCase().includes(searchText.toUpperCase()) // учитываем текст поиска (если '' - возвращаются все значения)
+      );
+    }
+
+    return allTasks;
   }
 
 // @ts-ignore

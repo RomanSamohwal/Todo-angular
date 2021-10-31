@@ -8,6 +8,7 @@ import {EditTaskDialogComponent} from "../../dialog/edit-task-dialog/edit-task-d
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmDialogComponent} from "../../dialog/confirm-dialog/confirm-dialog.component";
 import {Category} from 'src/app/model/Category';
+import {Priority} from "../../model/Priority";
 
 @Component({
   selector: 'app-tasks',
@@ -20,7 +21,7 @@ export class TasksComponent implements OnInit {
   public displayedColumns: string[] = ['color', 'id', 'title', 'date', 'priority', 'category','operations', 'select'];
   // @ts-ignore
   public dataSource: MatTableDataSource<Task> // контейнер - источник данных для таблицы
-
+  private priorities: Priority[] = []; // список приоритетов (для фильтрации задач)
   // ссылки на компоненты таблицы
   // @ts-ignore
   @ViewChild(MatPaginator, {static: false}) private paginator: MatPaginator;
@@ -37,6 +38,11 @@ export class TasksComponent implements OnInit {
     this.fillTable()
   }
 
+  @Input('priorities')
+  set setPriorities(priorities: Priority[]) {
+    this.priorities = priorities;
+  }
+
   @Output()
   deleteTask = new EventEmitter<Task>();
 
@@ -45,6 +51,20 @@ export class TasksComponent implements OnInit {
 
   @Output()
   selectCategory = new EventEmitter<Category>(); // нажали на категорию из списка задач
+
+  @Output()
+  filterByTitle = new EventEmitter<string>();
+
+  @Output()
+  filterByStatus = new EventEmitter<boolean>();
+
+  @Output()
+  filterByPriority = new EventEmitter<Priority>();
+
+  // поиск
+  private searchTaskText: string = '' // текущее значение для поиска задач
+  private selectedStatusFilter: boolean | null = null;   // по-умолчанию будут показываться задачи по всем статусам (решенные и нерешенные)
+  private selectedPriorityFilter: Priority | null = null;   // по-умолчанию будут показываться задачи по всем приоритетам
 
   constructor(private dataHandler: DataHandlerService,
               private dialog: MatDialog, // работа с диалоговым окном
@@ -179,8 +199,31 @@ export class TasksComponent implements OnInit {
   }
 
   private onSelectCategory(category: any) {
-    console.log(category)
     this.selectCategory.emit(category);
+  }
+
+  // фильтрация по статусу
+  private onFilterByStatus(value: boolean) {
+    // на всякий случай проверяем изменилось ли значение (хотя сам UI компонент должен это делать)
+    if (value !== this.selectedStatusFilter) {
+      this.selectedStatusFilter = value;
+      this.filterByStatus.emit(this.selectedStatusFilter);
+    }
+  }
+
+  // фильтрация по названию
+  private onFilterByTitle() {
+    this.filterByTitle.emit(this.searchTaskText);
+  }
+
+  // фильтрация по приоритету
+  private onFilterByPriority(value: Priority) {
+
+    // на всякий случай проверяем изменилось ли значение (хотя сам UI компонент должен это делать)
+    if (value !== this.selectedPriorityFilter) {
+      this.selectedPriorityFilter = value;
+      this.filterByPriority.emit(this.selectedPriorityFilter);
+    }
   }
 }
 
